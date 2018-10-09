@@ -1,13 +1,27 @@
 package com.bignerdranch.android.scrolltheworld;
 
-import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
+import android.content.Intent;
+import android.view.View;
+import android.widget.Button;
 
-public class MainActivity extends AppCompatActivity {
+import com.bignerdranch.android.scrolltheworld.HomePage.Activity.WorldMapActivity;
+import com.bignerdranch.android.scrolltheworld.common.activity.BaseActivity;
+
+import butterknife.BindView;
+import butterknife.OnClick;
+
+public class MainActivity extends BaseActivity {
+
+    @BindView(R.id.jump)
+    Button mJump;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+    protected int getContentViewResId() {
+        return R.layout.activity_main;
+    }
+
+    @OnClick(R.id.jump)
+    public void jumptomap(View view) {
+        startActivity(new Intent(this, WorldMapActivity.class));
     }
 }
