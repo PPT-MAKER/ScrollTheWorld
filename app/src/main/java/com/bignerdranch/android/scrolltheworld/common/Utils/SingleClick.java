@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
 public @interface SingleClick {
     long timeValue() default 1000L;
 
-    int tag() default -1;
+    int filterType() default 1;
 
     BanClickUtil.Order order() default BanClickUtil.Order.FIRST;
 }

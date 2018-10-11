@@ -13,6 +13,15 @@ import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
 
 import java.lang.reflect.Method;
+import java.util.concurrent.TimeUnit;
+
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.android.MainThreadDisposable;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Consumer;
+
 
 /**
  * Created by huangwt on 2018/10/10
@@ -21,11 +30,33 @@ import java.lang.reflect.Method;
 @Aspect
 public class ClickAspect {
 
+    private static ProceedingJoinPoint sJoinPoint;
+
+    private static ObservableEmitter<Object> sEmitter;
+
+    private static Disposable mDisposable =  Observable.create(new ObservableOnSubscribe<Object>() {
+        @Override
+        public void subscribe(ObservableEmitter<Object> e) {
+            sEmitter = e;
+        }
+    }).throttleLast(2000L, TimeUnit.MILLISECONDS).subscribe(new Consumer() {
+        @Override
+        public void accept(Object o) throws Exception {
+            try {
+                if (sJoinPoint != null) {
+                    sJoinPoint.proceed();
+                }
+            } catch (Throwable throwable) {
+                throwable.printStackTrace();
+            }
+        }
+    });
+
     @Pointcut("execution(@com.bignerdranch.android.scrolltheworld.common.Utils.SingleClick * *(..))")
     public void methodAnnotated() {}
 
     @Around("methodAnnotated()")
-    public void aroundJoinPoint(ProceedingJoinPoint joinPoint) throws Throwable {
+    public void aroundJoinPoint(final ProceedingJoinPoint joinPoint) throws Throwable {
         // 取出方法的参数
         View view = null;
         for (Object arg : joinPoint.getArgs()) {
@@ -50,12 +81,13 @@ public class ClickAspect {
         }
         SingleClick singleClick = method.getAnnotation(SingleClick.class);
         if (singleClick.order() == BanClickUtil.Order.FIRST) {
-            if (BanClickUtil.isClickAble(view, singleClick.timeValue(), singleClick.tag())) {
+            if (BanClickUtil.isClickAble(view, singleClick)) {
                 joinPoint.proceed();
             }
         } else{
-
+            if (BanClickUtil.isClickAbleLast(view, singleClick))
+            sJoinPoint = joinPoint;
+            sEmitter.onNext(new Object());
         }
     }
-
 }

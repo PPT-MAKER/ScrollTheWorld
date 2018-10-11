@@ -9,6 +9,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bignerdranch.android.scrolltheworld.HomePage.Activity.WorldMapActivity;
+import com.bignerdranch.android.scrolltheworld.common.Utils.BanClickUtil;
 import com.bignerdranch.android.scrolltheworld.common.Utils.CheckNetError;
 import com.bignerdranch.android.scrolltheworld.common.Utils.SingleClick;
 import com.bignerdranch.android.scrolltheworld.common.activity.BaseActivity;
@@ -36,17 +37,12 @@ public class MainActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
     }
 
+
     @CheckNetError
-    @SingleClick
+    @SingleClick(order = BanClickUtil.Order.LAST)
     @OnClick(R.id.jump)
     public void jumptomap(View view) {
-//        startActivity(new Intent(this, WorldMapActivity.class));
-        text.setText("" + k);
+        text.setText("点击生效");
     }
 
-    @Override
-    public boolean dispatchTouchEvent(MotionEvent ev) {
-        k++;
-        return super.dispatchTouchEvent(ev);
-    }
 }
