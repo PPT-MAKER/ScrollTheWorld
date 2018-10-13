@@ -17,13 +17,11 @@ public class BanClickUtil {
 
     private static int mLastTagHash = -1;
 
-    private static AtomicBoolean isRunning;
-
-    public final static int FILTER_BY_ID = 1;
+    public final static int FILTER_BY_ID = 1;   //To be addded in constant
 
     public final static int FILTER_BY_TAG = 2;
 
-    public static long sSystemTimeInterval = 20L;
+    public final static int TAG_KEY = -1;
 
     public enum Order{
         FIRST, LAST
@@ -31,10 +29,10 @@ public class BanClickUtil {
 
     public static boolean isClickAble(View v, SingleClick singleClick) {
         int viewId = v.getId();
-        Object viewTag = v.getTag();
+        Object viewTag = v.getTag(TAG_KEY);
         long time = System.currentTimeMillis();
         if (singleClick.filterType() == FILTER_BY_TAG && null != viewTag) {
-            if (time - mLastClickTime <singleClick.timeValue() && viewTag.hashCode() != mLastTagHash) {
+            if (time - mLastClickTime <singleClick.timeValue() && viewTag.hashCode() == mLastTagHash) {
                 return false;
             }
             mLastClickTime = time;
@@ -48,19 +46,5 @@ public class BanClickUtil {
             mLastClickViewId = viewId;
             return true;
         }
-    }
-
-    public static boolean isClickAbleLast(View view, SingleClick singleClick) {
-        if (singleClick.filterType() == FILTER_BY_ID) {
-
-        }
-    }
-
-    public static void setClickTime(long timeStamp) {
-        mLastClickTime = timeStamp;
-    }
-
-    public static long getClickTime() {
-        return mLastClickTime;
     }
 }

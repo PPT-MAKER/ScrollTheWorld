@@ -26,4 +26,14 @@
         android:layout_marginTop="231dp"
         android:text="-1" />
 
+    <Button
+        android:id="@+id/jump2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="194dp"
+        tools:layout_editor_absoluteX="1dp"
+        tools:layout_editor_absoluteY="114dp" />
+
 </RelativeLayout>

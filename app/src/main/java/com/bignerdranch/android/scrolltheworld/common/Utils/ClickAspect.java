@@ -1,10 +1,6 @@
 package com.bignerdranch.android.scrolltheworld.common.Utils;
 
-import android.util.Log;
 import android.view.View;
-import android.widget.Toast;
-
-import com.bignerdranch.android.scrolltheworld.common.activity.BaseActivity;
 
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -18,7 +14,6 @@ import java.util.concurrent.TimeUnit;
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
-import io.reactivex.android.MainThreadDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 
@@ -30,27 +25,22 @@ import io.reactivex.functions.Consumer;
 @Aspect
 public class ClickAspect {
 
-    private static ProceedingJoinPoint sJoinPoint;
+    private static ObservableEmitter<ProceedingJoinPoint> sEmitter;
 
-    private static ObservableEmitter<Object> sEmitter;
+    private static Disposable mDisposable;
 
-    private static Disposable mDisposable =  Observable.create(new ObservableOnSubscribe<Object>() {
+    private static Consumer<ProceedingJoinPoint> sConsumer = new Consumer<ProceedingJoinPoint>() {
         @Override
-        public void subscribe(ObservableEmitter<Object> e) {
-            sEmitter = e;
-        }
-    }).throttleLast(2000L, TimeUnit.MILLISECONDS).subscribe(new Consumer() {
-        @Override
-        public void accept(Object o) throws Exception {
+        public void accept(ProceedingJoinPoint proceedingJoinPoint) throws Exception {
             try {
-                if (sJoinPoint != null) {
-                    sJoinPoint.proceed();
-                }
+                proceedingJoinPoint.proceed();
+                if (null != mDisposable && !mDisposable.isDisposed())
+                    mDisposable.dispose();    // intervalDuration之后进行销毁;
             } catch (Throwable throwable) {
                 throwable.printStackTrace();
             }
         }
-    });
+    };
 
     @Pointcut("execution(@com.bignerdranch.android.scrolltheworld.common.Utils.SingleClick * *(..))")
     public void methodAnnotated() {}
@@ -73,21 +63,21 @@ public class ClickAspect {
         if (!method.isAnnotationPresent(SingleClick.class)) {
             return;
         }
-        if (method.isAnnotationPresent(CheckNetError.class)) {
-            if (NetReceiver.isNetworkError(null)) {
-                Toast.makeText(BaseActivity.mActivityStack.get(0), "当前网络出错", Toast.LENGTH_SHORT).show();
-                return;
-            }
-        }
         SingleClick singleClick = method.getAnnotation(SingleClick.class);
         if (singleClick.order() == BanClickUtil.Order.FIRST) {
             if (BanClickUtil.isClickAble(view, singleClick)) {
                 joinPoint.proceed();
             }
         } else{
-            if (BanClickUtil.isClickAbleLast(view, singleClick))
-            sJoinPoint = joinPoint;
-            sEmitter.onNext(new Object());
+            if (mDisposable == null || mDisposable.isDisposed()) {
+                mDisposable = Observable.create(new ObservableOnSubscribe<ProceedingJoinPoint>() {
+                    @Override
+                    public void subscribe(ObservableEmitter<ProceedingJoinPoint> e) {
+                        sEmitter = e;
+                    }
+                }).throttleLast(singleClick.timeValue(), TimeUnit.MILLISECONDS).subscribe(sConsumer);
+            }
+            sEmitter.onNext(joinPoint);
         }
     }
 }

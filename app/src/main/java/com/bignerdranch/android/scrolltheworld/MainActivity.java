@@ -2,6 +2,7 @@ package com.bignerdranch.android.scrolltheworld;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
@@ -22,6 +23,9 @@ public class MainActivity extends BaseActivity {
     @BindView(R.id.jump)
     Button mJump;
 
+    @BindView(R.id.jump2)
+    Button mJump2;
+
     @BindView(R.id.count)
     TextView text;
 
@@ -35,14 +39,15 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Integer k = 2;
+        mJump.setTag(BanClickUtil.TAG_KEY, k);
+        mJump2.setTag(BanClickUtil.TAG_KEY, k);
     }
 
-
-    @CheckNetError
-    @SingleClick(order = BanClickUtil.Order.LAST)
-    @OnClick(R.id.jump)
+    @SingleClick(order = BanClickUtil.Order.FIRST, filterType = BanClickUtil.FILTER_BY_TAG)
+    @OnClick({R.id.jump, R.id.jump2})
     public void jumptomap(View view) {
         text.setText("点击生效");
+        Log.i("点击生效", "我被执行了");
     }
-
 }
